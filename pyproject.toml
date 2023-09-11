@@ -8,7 +8,7 @@ version = "0.0.1"
 description = "الشيفرة البرمجية لدعم البحث بالمعنى على منصة باحث"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -17,21 +17,22 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 authors = [{ name = "الكتب المٌيسّرة", email = "easybooksdev@gmail.com" }]
 keywords = ["baheth", "semantic search", "semantic similarity"]
-dependencies = ["fastapi==0.103.1", "uvicorn==0.23.2"]
+dependencies = [
+    "fastapi==0.103.1",
+    "huggingface-hub==0.16.4",
+    "optimum[onnxruntime]==1.13.1",
+    "pydantic-settings==2.0.3",
+    "uvicorn==0.23.2",
+]
 
 [project.optional-dependencies]
-dev = [
-    "black==23.9.1",
-    "isort==5.12.0",
-    "pre-commit==3.4.0",
-]
+dev = ["black==23.9.1", "isort==5.12.0", "pre-commit==3.4.0"]
 
 [project.urls]
 homepage = "https://github.com/ieasybooks/baheth_ss"
