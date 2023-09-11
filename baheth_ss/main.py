@@ -4,9 +4,14 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.post('/hadith_ss')
-def hadith_ss(query: str) -> list[int]:
+@app.post('/hadiths/semantic_search')
+def hadith_semantic_search(query: str) -> list[int]:
     return []
+
+
+@app.post('/hadiths/count')
+def hadith_count() -> int:
+    return 0
 
 
 @app.get('/up')
