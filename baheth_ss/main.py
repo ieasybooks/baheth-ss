@@ -1,5 +1,3 @@
-import os
-
 import huggingface_hub
 
 from fastapi import FastAPI, status
