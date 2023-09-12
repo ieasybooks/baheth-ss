@@ -5,5 +5,5 @@
 ## لتشغيل الخادم المحلي
 
 ```
-uvicorn baheth_ss.main:app --reload --env-file .env
+uvicorn src.baheth_ss.main:app --reload --env-file .env
 ```

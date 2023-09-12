@@ -25,9 +25,12 @@ authors = [{ name = "الكتب المٌيسّرة", email = "easybooksdev@gmail
 keywords = ["baheth", "semantic search", "semantic similarity"]
 dependencies = [
     "fastapi==0.103.1",
+    "gdown==4.7.1",
     "huggingface-hub==0.16.4",
     "optimum[onnxruntime]==1.13.1",
     "pydantic-settings==2.0.3",
+    "torch==2.0.1",
+    "transformers==4.33.1",
     "uvicorn==0.23.2",
 ]
 
@@ -38,6 +41,7 @@ dev = [
     "pandas==2.1.0",
     "pre-commit==3.4.0",
     "PyArabic==0.6.15",
+    "tqdm==4.66.1",
 ]
 
 [project.urls]
