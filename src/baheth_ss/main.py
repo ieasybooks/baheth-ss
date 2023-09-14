@@ -1,90 +1,81 @@
-import pickle as pkl
-
-from pathlib import Path
-
-import gdown
 import huggingface_hub
-import torch.nn.functional as F
+import torch
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from pydantic_settings import BaseSettings
-from torch import Tensor
+from optimum.onnxruntime import ORTModelForFeatureExtraction
+from transformers import AutoModel, AutoTokenizer
 
+import src.baheth_ss.utils.data as data_utils
 
-class Settings(BaseSettings):
-    use_onnx_runtime: bool
-    hf_access_token: str
-    hf_model_id: str
-    hadiths_data_file_path: Path
-    hadiths_data_file_url: str
+from src.baheth_ss.pipelines.sentence_embedding_pipeline import SentenceEmbeddingPipeline
+from src.baheth_ss.settings import Settings
 
 
 settings = Settings()
 
-
+model_class = AutoModel
 if settings.use_onnx_runtime:
-    from optimum.pipelines import pipeline
+    model_class = ORTModelForFeatureExtraction
 
-    embedder = pipeline(task='feature-extraction', model=settings.hf_model_id, accelerator='ort')
-else:
-    from transformers import pipeline
-
-    embedder = pipeline(task='feature-extraction', model=settings.hf_model_id)
-
-
-def download_hadiths_data_file_if_not_exists(hadiths_data_file_path: Path, hadiths_data_file_url: str) -> None:
-    if hadiths_data_file_path.exists():
-        return
-
-    gdown.download(hadiths_data_file_url, output=str(hadiths_data_file_path))
-
-
-def load_hadiths_data(hadiths_data_file_path: Path) -> tuple[list[int], Tensor]:
-    with open(hadiths_data_file_path, 'rb') as fp:
-        hadiths_data = pkl.load(fp)
-
-    return hadiths_data['indexes'], hadiths_data['embeddings'].T
-
+data_utils.download_hadiths_data_file_if_not_exists(settings.hadiths_data_file_path, settings.hadiths_data_file_url)
 
 huggingface_hub.login(token=settings.hf_access_token)
 
-download_hadiths_data_file_if_not_exists(settings.hadiths_data_file_path, settings.hadiths_data_file_url)
-
 app = FastAPI()
-indexes, embeddings = load_hadiths_data(settings.hadiths_data_file_path)
+hadiths_indexes, hadiths_embeddings = data_utils.load_hadiths_data(settings.hadiths_data_file_path)
+embedder = SentenceEmbeddingPipeline(
+    model=model_class.from_pretrained(settings.hf_model_id),
+    tokenizer=AutoTokenizer.from_pretrained(settings.hf_model_id),
+)
 
 
-@app.get('/hadiths/semantic_search')
-def hadiths_semantic_search(query: str, limit: int = 10) -> JSONResponse:
+@app.get('/')
+def root() -> str:
+    return 'خدمة البحث بالمعنى على منصة باحث'
+
+
+@app.post('/hadiths/semantic_search')
+def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONResponse:
     try:
+        hadiths_indexes
+        hadiths_embeddings
         embedder
     except NameError:
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
 
-    if len(query.split()) > 25:
+    if type(queries) == str:
+        queries = [queries]
+
+    if len(queries) > 50 or max([len(query.split()) for query in queries]) > 25:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={})
 
-    query_embeddings = F.normalize(Tensor(embedder(f'query: {query}')[0]).mean(dim=0), p=2, dim=0)
+    queries_embeddings = torch.stack((embedder([f'query: {query}' for query in queries]))).squeeze(1)
 
-    topk_embeddings = ((query_embeddings @ embeddings) * 100).topk(limit).indices.tolist()
+    topk_queries_hadiths = ((queries_embeddings @ hadiths_embeddings) * 100).topk(limit).indices.tolist()
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={'matching_results': [indexes[element] for element in topk_embeddings]},
+        content=[
+            {
+                'query': query,
+                'matching_hadiths': [hadiths_indexes[topk_query_hadith] for topk_query_hadith in topk_query_hadiths],
+            }
+            for query, topk_query_hadiths in zip(queries, topk_queries_hadiths)
+        ],
     )
 
 
 @app.get('/hadiths/count')
 def hadiths_count() -> JSONResponse:
     try:
-        indexes
+        hadiths_indexes
     except NameError:
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
 
-    return JSONResponse(status_code=status.HTTP_200_OK, content={'hadiths_count': len(indexes)})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={'hadiths_count': len(hadiths_indexes)})
 
 
-@app.get('/up')
-def up() -> str:
+@app.get('/are_you_healthy')
+def are_you_healthy() -> str:
     return 'أنا بخير، شكرا لسؤالك :)'

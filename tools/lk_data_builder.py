@@ -54,7 +54,7 @@ def main() -> None:
     huggingface_hub.login(token=args.hf_access_token)
 
     lk_data = read_lk_data(args.lk_data_path)
-    lk_data.to_json(args.output_dir.joinpath('lk_hadiths.json'), indent=2, force_ascii=False, orient='records')
+    lk_data.to_json(args.output_dir.joinpath('lk_hadiths_data.json'), indent=2, force_ascii=False, orient='records')
 
     tokenizer, model = load_tokenizer_and_model(args.hf_model_id, args.use_onnx_runtime)
 
