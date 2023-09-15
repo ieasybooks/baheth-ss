@@ -41,6 +41,10 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "explicit"
 
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
 [tool.isort]
 profile = "black"
 src_paths = ["src", "tools"]

@@ -18,8 +18,6 @@ class SentenceEmbeddingPipeline(Pipeline):
         return self.tokenizer(inputs, max_length=MODEL_MAX_LENGTH, padding=True, truncation=True, return_tensors='pt')
 
     def _forward(self, model_inputs: UserDict[str, Tensor]) -> dict[str, Any]:
-        print(model_inputs)
-        print(type(model_inputs))
         return {
             'outputs': self.model(**model_inputs)['last_hidden_state'],
             'attention_mask': model_inputs['attention_mask'],
