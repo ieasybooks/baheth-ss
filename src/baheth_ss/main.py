@@ -58,6 +58,7 @@ def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONRe
         content=[
             {
                 'query': query,
+                'limit': limit,
                 'matching_hadiths': [
                     hadiths_data['indexes'][topk_query_hadith] for topk_query_hadith in topk_query_hadiths
                 ],
@@ -68,7 +69,7 @@ def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONRe
 
 
 @app.get('/hadiths/nearest_neighbors')
-def hadiths_nearest_neighbors(hadith_index: int) -> JSONResponse:
+def hadiths_nearest_neighbors(hadith_index: int, limit: int = 100) -> JSONResponse:
     try:
         hadiths_data
     except NameError:
@@ -81,7 +82,8 @@ def hadiths_nearest_neighbors(hadith_index: int) -> JSONResponse:
         status_code=status.HTTP_200_OK,
         content={
             'hadith_index': hadith_index,
-            'nearest_neighbors': hadiths_data['nearest_neighbors'][hadith_index],
+            'limit': limit,
+            'nearest_neighbors': hadiths_data['nearest_neighbors'][hadith_index][:limit],
         },
     )
 
