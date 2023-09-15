@@ -54,14 +54,29 @@ def main() -> None:
     huggingface_hub.login(token=args.hf_access_token)
 
     lk_data = read_lk_data(args.lk_data_path)
-    lk_data.to_json(args.output_dir.joinpath('lk_hadiths_data.json'), indent=2, force_ascii=False, orient='records')
 
     tokenizer, model = load_tokenizer_and_model(args.hf_model_id, args.use_onnx_runtime)
-
     lk_embeddings = embed_lk_data(lk_data, tokenizer, model, args.output_dir)
+    lk_nearest_neighbors = get_lk_nearest_neighbors(lk_embeddings)
 
-    with open(args.output_dir.joinpath(f'lk_hadiths_data.pkl'), 'wb') as fp:
-        pkl.dump({'indexes': lk_data['index'].tolist(), 'embeddings': lk_embeddings}, fp)
+    lk_data['nearest_neighbors'] = lk_nearest_neighbors
+
+    lk_data.to_json(
+        args.output_dir.joinpath(f'{args.output_file_name}.json'),
+        indent=2,
+        force_ascii=False,
+        orient='records',
+    )
+
+    with open(args.output_dir.joinpath(f'{args.output_file_name}.pkl'), 'wb') as fp:
+        pkl.dump(
+            {
+                'indexes': lk_data['index'].tolist(),
+                'embeddings': lk_embeddings,
+                'nearest_neighbors': lk_nearest_neighbors,
+            },
+            fp,
+        )
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -72,6 +87,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--hf_model_id')
     parser.add_argument('--use_onnx_runtime', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--output_dir', type=Path, default='./data')
+    parser.add_argument('--output_file_name', default='lk_hadiths_data')
 
     return parser.parse_args()
 
@@ -266,6 +282,15 @@ def embed_lk_data(
 def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
+
+
+def get_lk_nearest_neighbors(lk_embeddings: Tensor) -> Tensor:
+    lk_nearest_neighbors = (lk_embeddings @ lk_embeddings.T * 100).topk(101).indices.tolist()
+
+    for i in range(len(lk_nearest_neighbors)):
+        lk_nearest_neighbors[i].remove(i)
+
+    return lk_nearest_neighbors
 
 
 if __name__ == '__main__':

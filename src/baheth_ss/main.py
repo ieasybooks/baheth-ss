@@ -23,7 +23,7 @@ data_utils.download_hadiths_data_file_if_not_exists(settings.hadiths_data_file_p
 huggingface_hub.login(token=settings.hf_access_token)
 
 app = FastAPI()
-hadiths_indexes, hadiths_embeddings = data_utils.load_hadiths_data(settings.hadiths_data_file_path)
+hadiths_data = data_utils.load_hadiths_data(settings.hadiths_data_file_path)
 embedder = SentenceEmbeddingPipeline(
     model=model_class.from_pretrained(settings.hf_model_id),
     tokenizer=AutoTokenizer.from_pretrained(settings.hf_model_id),
@@ -38,8 +38,7 @@ def root() -> str:
 @app.post('/hadiths/semantic_search')
 def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONResponse:
     try:
-        hadiths_indexes
-        hadiths_embeddings
+        hadiths_data
         embedder
     except NameError:
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
@@ -52,28 +51,49 @@ def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONRe
 
     queries_embeddings = torch.stack((embedder([f'query: {query}' for query in queries]))).squeeze(1)
 
-    topk_queries_hadiths = ((queries_embeddings @ hadiths_embeddings) * 100).topk(limit).indices.tolist()
+    topk_queries_hadiths = ((queries_embeddings @ hadiths_data['embeddings']) * 100).topk(limit).indices.tolist()
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=[
             {
                 'query': query,
-                'matching_hadiths': [hadiths_indexes[topk_query_hadith] for topk_query_hadith in topk_query_hadiths],
+                'matching_hadiths': [
+                    hadiths_data['indexes'][topk_query_hadith] for topk_query_hadith in topk_query_hadiths
+                ],
             }
             for query, topk_query_hadiths in zip(queries, topk_queries_hadiths)
         ],
     )
 
 
-@app.get('/hadiths/count')
-def hadiths_count() -> JSONResponse:
+@app.get('/hadiths/nearest_neighbors')
+def hadiths_nearest_neighbors(hadith_index: int) -> JSONResponse:
     try:
-        hadiths_indexes
+        hadiths_data
     except NameError:
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
 
-    return JSONResponse(status_code=status.HTTP_200_OK, content={'hadiths_count': len(hadiths_indexes)})
+    if hadith_index > len(hadiths_data['indexes']):
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={})
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            'hadith_index': hadith_index,
+            'nearest_neighbors': hadiths_data['nearest_neighbors'][hadith_index],
+        },
+    )
+
+
+@app.get('/hadiths/count')
+def hadiths_count() -> JSONResponse:
+    try:
+        hadiths_data
+    except NameError:
+        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content={'hadiths_count': len(hadiths_data['indexes'])})
 
 
 @app.get('/are_you_healthy')
