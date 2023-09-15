@@ -1,14 +1,18 @@
 import huggingface_hub
 import torch
 
-from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, status
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoModel, AutoTokenizer
 
 import src.baheth_ss.utils.data as data_utils
 
 from src.baheth_ss.pipelines.sentence_embedding_pipeline import SentenceEmbeddingPipeline
+from src.baheth_ss.requests.hadiths_nearest_neighbors_request import HadithsNearestNeighborsRequest
+from src.baheth_ss.requests.hadiths_semantic_search_request import HadithsSemanticSearchRequest
+from src.baheth_ss.responses.hadiths_count_response import HadithsCountResponse
+from src.baheth_ss.responses.hadiths_nearest_neighbors_response import HadithsNearestNeighborsResponse
+from src.baheth_ss.responses.hadiths_semantic_search_response import HadithsSemanticSearchResponse
 from src.baheth_ss.settings import Settings
 
 
@@ -35,67 +39,59 @@ def root() -> str:
     return 'خدمة البحث بالمعنى على منصة باحث'
 
 
-@app.post('/hadiths/semantic_search')
-def hadiths_semantic_search(queries: str | list[str], limit: int = 10) -> JSONResponse:
+@app.post('/hadiths/semantic_search', response_model=HadithsSemanticSearchResponse)
+def hadiths_semantic_search(request: HadithsSemanticSearchRequest) -> HadithsSemanticSearchResponse:
     try:
         hadiths_data
         embedder
     except NameError:
-        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
+        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Service is still loading data...')
 
-    if type(queries) == str:
-        queries = [queries]
+    queries_embeddings = torch.stack((embedder([f'query: {query}' for query in request.queries]))).squeeze(1)
 
-    if len(queries) > 50 or max([len(query.split()) for query in queries]) > 25:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={})
+    topk_queries_hadiths = (
+        ((queries_embeddings @ hadiths_data['embeddings']) * 100).topk(request.limit).indices.tolist()
+    )
 
-    queries_embeddings = torch.stack((embedder([f'query: {query}' for query in queries]))).squeeze(1)
-
-    topk_queries_hadiths = ((queries_embeddings @ hadiths_data['embeddings']) * 100).topk(limit).indices.tolist()
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=[
+    return HadithsSemanticSearchResponse(
+        limit=request.limit,
+        results=[
             {
                 'query': query,
-                'limit': limit,
                 'matching_hadiths': [
                     hadiths_data['indexes'][topk_query_hadith] for topk_query_hadith in topk_query_hadiths
                 ],
             }
-            for query, topk_query_hadiths in zip(queries, topk_queries_hadiths)
+            for query, topk_query_hadiths in zip(request.queries, topk_queries_hadiths)
         ],
     )
 
 
-@app.get('/hadiths/nearest_neighbors')
-def hadiths_nearest_neighbors(hadith_index: int, limit: int = 100) -> JSONResponse:
+@app.get('/hadiths/nearest_neighbors', response_model=HadithsNearestNeighborsResponse)
+def hadiths_nearest_neighbors(request: HadithsNearestNeighborsRequest) -> HadithsNearestNeighborsResponse:
     try:
         hadiths_data
     except NameError:
-        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
+        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Service is still loading data...')
 
-    if hadith_index > len(hadiths_data['indexes']):
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={})
+    if request.hadith_index > len(hadiths_data['indexes']):
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Hadith does not exist.')
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            'hadith_index': hadith_index,
-            'limit': limit,
-            'nearest_neighbors': hadiths_data['nearest_neighbors'][hadith_index][:limit],
-        },
+    return HadithsNearestNeighborsResponse(
+        hadith_index=request.hadith_index,
+        limit=request.limit,
+        nearest_neighbors=hadiths_data['nearest_neighbors'][request.hadith_index][: request.limit],
     )
 
 
-@app.get('/hadiths/count')
-def hadiths_count() -> JSONResponse:
+@app.get('/hadiths/count', response_model=HadithsCountResponse)
+def hadiths_count() -> HadithsCountResponse:
     try:
         hadiths_data
     except NameError:
-        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={})
+        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Service is still loading data...')
 
-    return JSONResponse(status_code=status.HTTP_200_OK, content={'hadiths_count': len(hadiths_data['indexes'])})
+    return HadithsCountResponse(hadiths_count=len(hadiths_data['indexes']))
 
 
 @app.get('/are_you_healthy')
