@@ -4,7 +4,7 @@ from pathlib import Path
 
 import gdown
 
-from src.baheth_ss.types.hadiths_data import HadithsData
+from ..types.hadiths_data import HadithsData
 
 
 def download_hadiths_data_file_if_not_exists(hadiths_data_file_path: Path, hadiths_data_file_url: str) -> None:

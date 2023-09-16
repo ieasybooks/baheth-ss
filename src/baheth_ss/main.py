@@ -9,12 +9,12 @@ from transformers import AutoModel, AutoTokenizer
 
 import src.baheth_ss.utils.data as data_utils
 
-from src.baheth_ss.pipelines.sentence_embedding_pipeline import SentenceEmbeddingPipeline
-from src.baheth_ss.requests.hadiths_semantic_search_request import HadithsSemanticSearchRequest
-from src.baheth_ss.responses.hadiths_count_response import HadithsCountResponse
-from src.baheth_ss.responses.hadiths_nearest_neighbors_response import HadithsNearestNeighborsResponse
-from src.baheth_ss.responses.hadiths_semantic_search_response import HadithsSemanticSearchResponse
-from src.baheth_ss.settings import Settings
+from .pipelines.sentence_embedding_pipeline import SentenceEmbeddingPipeline
+from .requests.hadiths_semantic_search_request import HadithsSemanticSearchRequest
+from .responses.hadiths_count_response import HadithsCountResponse
+from .responses.hadiths_nearest_neighbors_response import HadithsNearestNeighborsResponse
+from .responses.hadiths_semantic_search_response import HadithsSemanticSearchResponse
+from .settings import Settings
 
 
 settings = Settings()

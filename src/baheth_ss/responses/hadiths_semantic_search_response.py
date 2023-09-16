@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from baheth_ss.responses.hadith_semantic_search_response import HadithSemanticSearchResponse
+from .hadith_semantic_search_response import HadithSemanticSearchResponse
 
 
 class HadithsSemanticSearchResponse(BaseModel):
