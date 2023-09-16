@@ -40,34 +40,6 @@ def root() -> str:
     return 'خدمة البحث بالمعنى على منصة باحث'
 
 
-@app.post('/hadiths/semantic_search', response_model=HadithsSemanticSearchResponse)
-def hadiths_semantic_search(request: HadithsSemanticSearchRequest) -> HTTPException | HadithsSemanticSearchResponse:
-    try:
-        hadiths_data
-        embedder
-    except NameError:
-        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Service is still loading data...')
-
-    queries_embeddings = torch.stack((embedder([f'query: {query}' for query in request.queries]))).squeeze(1)
-
-    topk_queries_hadiths = (
-        ((queries_embeddings @ hadiths_data['embeddings']) * 100).topk(request.limit).indices.tolist()
-    )
-
-    return HadithsSemanticSearchResponse(
-        limit=request.limit,
-        results=[
-            {
-                'query': query,
-                'matching_hadiths': [
-                    hadiths_data['indexes'][topk_query_hadith] for topk_query_hadith in topk_query_hadiths
-                ],
-            }
-            for query, topk_query_hadiths in zip(request.queries, topk_queries_hadiths)
-        ],
-    )
-
-
 @app.get('/hadiths/count', response_model=HadithsCountResponse)
 def hadiths_count() -> HTTPException | HadithsCountResponse:
     try:
@@ -95,6 +67,34 @@ def hadiths_nearest_neighbors(
         hadith_index=hadith_index,
         limit=limit,
         nearest_neighbors=hadiths_data['nearest_neighbors'][hadith_index][:limit],
+    )
+
+
+@app.post('/hadiths/semantic_search', response_model=HadithsSemanticSearchResponse)
+def hadiths_semantic_search(request: HadithsSemanticSearchRequest) -> HTTPException | HadithsSemanticSearchResponse:
+    try:
+        hadiths_data
+        embedder
+    except NameError:
+        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Service is still loading data...')
+
+    queries_embeddings = torch.stack((embedder([f'query: {query}' for query in request.queries]))).squeeze(1)
+
+    topk_queries_hadiths = (
+        ((queries_embeddings @ hadiths_data['embeddings']) * 100).topk(request.limit).indices.tolist()
+    )
+
+    return HadithsSemanticSearchResponse(
+        limit=request.limit,
+        results=[
+            {
+                'query': query,
+                'matching_hadiths': [
+                    hadiths_data['indexes'][topk_query_hadith] for topk_query_hadith in topk_query_hadiths
+                ],
+            }
+            for query, topk_query_hadiths in zip(request.queries, topk_queries_hadiths)
+        ],
     )
 
 
