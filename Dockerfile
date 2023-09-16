@@ -11,6 +11,7 @@ ENV MODULE_NAME=src.baheth_ss.main
 ENV WEB_CONCURRENCY=2
 ENV PORT=8383
 ENV TIMEOUT=1500
+ENV GUNICORN_CMD_ARGS="--preload"
 
 WORKDIR /code
 COPY --from=requirements-stage /tmp/requirements.txt /code/requirements.txt

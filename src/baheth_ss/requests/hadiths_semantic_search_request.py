@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, validator
 
 class HadithsSemanticSearchRequest(BaseModel):
     queries: str | list[str]
-    limit: int = Field(ge=0, le=100, default=10)
+    limit: int = Field(ge=0, le=100, default=25)
 
     @validator('queries')
     def validate_queries(cls, queries: str | list[str]) -> list[str]:
