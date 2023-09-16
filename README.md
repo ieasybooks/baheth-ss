@@ -19,7 +19,7 @@ poetry isntall
 ## لتشغيل الخادم المحلي
 
 ```
-poetry run uvicorn src.baheth_ss.main:app --reload --env-file .env
+poetry run uvicorn src.baheth_ss.main:app --port 8383 --reload --env-file .env
 ```
 
 ## لبناء وتشغيل Docker image
