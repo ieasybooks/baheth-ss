@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/bin/sh
+=======
+#/bin/sh
+>>>>>>> 2170e49 (Add Kamal configs)
 
 # A sample post-deploy hook
 #

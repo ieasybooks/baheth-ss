@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/env ruby
+=======
+#/usr/bin/env ruby
+>>>>>>> 2170e49 (Add Kamal configs)
 
 # A sample pre-deploy hook
 #
