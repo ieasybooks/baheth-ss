@@ -4,6 +4,8 @@ from pathlib import Path
 
 import gdown
 
+from dotmap import DotMap
+
 from ..types.hadiths_data import HadithsData
 
 
@@ -14,10 +16,10 @@ def download_hadiths_data_file_if_not_exists(hadiths_data_file_path: Path, hadit
     gdown.download(hadiths_data_file_url, output=str(hadiths_data_file_path), fuzzy=True)
 
 
-def load_hadiths_data(hadiths_data_file_path: Path) -> HadithsData:
+def load_hadiths_data(hadiths_data_file_path: Path) -> DotMap:
     with open(hadiths_data_file_path, 'rb') as fp:
         hadiths_data: HadithsData = pkl.load(fp)
 
     hadiths_data['embeddings'] = hadiths_data['embeddings'].T
 
-    return hadiths_data
+    return DotMap(hadiths_data)

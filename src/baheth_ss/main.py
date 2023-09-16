@@ -14,23 +14,23 @@ from .routers import hadiths
 from .settings import Settings
 
 
-settings = Settings()
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    huggingface_hub.login(token=settings.hf_access_token)
+    huggingface_hub.login(token=app.settings.hf_access_token)
 
-    data_utils.download_hadiths_data_file_if_not_exists(settings.hadiths_data_file_path, settings.hadiths_data_file_url)
+    data_utils.download_hadiths_data_file_if_not_exists(
+        app.settings.hadiths_data_file_path,
+        app.settings.hadiths_data_file_url,
+    )
 
     model_class = AutoModel
-    if settings.use_onnx_runtime:
+    if app.settings.use_onnx_runtime:
         model_class = ORTModelForFeatureExtraction
 
-    app.hadiths.data = data_utils.load_hadiths_data(settings.hadiths_data_file_path)
+    app.hadiths = data_utils.load_hadiths_data(app.settings.hadiths_data_file_path)
     app.hadiths.embedder = SentenceEmbeddingPipeline(
-        model=model_class.from_pretrained(settings.hf_model_id),
-        tokenizer=AutoTokenizer.from_pretrained(settings.hf_model_id),
+        model=model_class.from_pretrained(app.settings.hf_model_id),
+        tokenizer=AutoTokenizer.from_pretrained(app.settings.hf_model_id),
     )
 
     yield
@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(lifespan=lifespan)
+app.settings = Settings()
 app.include_router(hadiths.router)
 
 

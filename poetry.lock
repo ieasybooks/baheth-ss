@@ -463,6 +463,17 @@ files = [
 ]
 
 [[package]]
+name = "dotmap"
+version = "1.3.30"
+description = "ordered, dynamically-expandable dot-access dictionary"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dotmap-1.3.30-py3-none-any.whl", hash = "sha256:bd9fa15286ea2ad899a4d1dc2445ed85a1ae884a42effb87c89a6ecce71243c6"},
+    {file = "dotmap-1.3.30.tar.gz", hash = "sha256:5821a7933f075fb47563417c0e92e0b7c031158b4c9a6a7e56163479b658b368"},
+]
+
+[[package]]
 name = "evaluate"
 version = "0.4.0"
 description = "HuggingFace community-driven open-source library of evaluation"
@@ -765,13 +776,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "identify"
-version = "2.5.28"
+version = "2.5.29"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.28-py2.py3-none-any.whl", hash = "sha256:87816de144bf46d161bd5b3e8f5596b16cade3b80be537087334b26bc5c177f3"},
-    {file = "identify-2.5.28.tar.gz", hash = "sha256:94bb59643083ebd60dc996d043497479ee554381fbc5307763915cda49b0e78f"},
+    {file = "identify-2.5.29-py2.py3-none-any.whl", hash = "sha256:24437fbf6f4d3fe6efd0eb9d67e24dd9106db99af5ceb27996a5f7895f24bf1b"},
+    {file = "identify-2.5.29.tar.gz", hash = "sha256:d43d52b86b15918c137e3a74fff5224f60385cd0e9c38e99d07c257f02f151a5"},
 ]
 
 [package.extras]
@@ -2539,4 +2550,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0e2045ff406d158393ffce68c5866a596753370def1d4d201819a770dcca2a5e"
+content-hash = "24eed53d230b6d91bab1c3e435886e36eb770d3c889c8e1bbc4754f7d474e51a"
