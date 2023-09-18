@@ -12,6 +12,12 @@ servers:
     options:
       cpus: 2.0
       memory: 5g
+    labels:
+      traefik.http.routers.baheth_ss.rule: Host(`ss.ieasybooks.com`)
+      traefik.http.routers.baheth_ss_secure.entrypoints: websecure
+      traefik.http.routers.baheth_ss_secure.rule: Host(`ss.ieasybooks.com`)
+      traefik.http.routers.baheth_ss_secure.tls: true
+      traefik.http.routers.baheth_ss_secure.tls.certresolver: letsencrypt
 
 # Credentials for your image host.
 registry:
@@ -77,9 +83,21 @@ traefik:
   host_port: 81
   options:
     publish:
-      - "8383:8383"
+      - "8080:8080"
+      - "8443:8443"
+    volume:
+      - "/letsencrypt/acme.json:/letsencrypt/acme.json"
   args:
-    entryPoints.web.address: ":8383"
+    entryPoints.web.address: ":8080"
+    entryPoints.websecure.address: ":8443"
+    certificatesResolvers.letsencrypt.acme.email: "easybooksdev@gmail.com"
+    certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
+    certificatesresolvers.letsencrypt.acme.dnschallenge.provider: cloudflare
+  env:
+    secret:
+      - CLOUDFLARE_API_KEY
+    clear:
+      CLOUDFLARE_EMAIL: 'easybooksdev@gmail.com'
 #     accesslog: true
 #     accesslog.format: json
 
