@@ -12,6 +12,10 @@ servers:
     options:
       cpus: 2.0
       memory: 5g
+    labels:
+      traefik.http.routers.baheth_ss-web.rule: 'Host(`ss.ieasybooks.com`)'
+      traefik.http.routers.baheth_ss-web.tls: true
+      traefik.http.routers.baheth_ss-web.tls.certresolver: letsencrypt
 
 # Credentials for your image host.
 registry:
@@ -74,8 +78,20 @@ builder:
 
 # Configure custom arguments for Traefik
 traefik:
-  host_port: 8383
-#   args:
+  host_port: 8080
+  options:
+    publish:
+      - "8443:8443"
+    volume:
+      - "/etc/traefik/acme/:/etc/traefik/acme/"
+  args:
+    accesslog.format: common
+    entryPoints.web.address: ":8080"
+    entryPoints.websecure.address: ":8443"
+    certificatesResolvers.letsencrypt.acme.email: "easybooksdev@gmail.com"
+    certificatesResolvers.letsencrypt.acme.storage: "/etc/traefik/acme/letsencrypt.json"
+    certificatesResolvers.letsencrypt.acme.tlschallenge: true
+    certificatesResolvers.letsencrypt.acme.caServer: https://acme-v02.api.letsencrypt.org/directory
 #     accesslog: true
 #     accesslog.format: json
 
