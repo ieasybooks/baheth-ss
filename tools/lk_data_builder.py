@@ -6,6 +6,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+import datasets
 import huggingface_hub
 import pandas as pd
 import torch
@@ -68,15 +69,16 @@ def main() -> None:
         orient='records',
     )
 
+    semantic_search_data = {
+        'indexes': lk_data['index'].tolist(),
+        'embeddings': lk_embeddings,
+        'nearest_neighbors': lk_nearest_neighbors,
+    }
+
     with open(args.output_dir.joinpath(f'{args.output_file_name}.pkl'), 'wb') as fp:
-        pkl.dump(
-            {
-                'indexes': lk_data['index'].tolist(),
-                'embeddings': lk_embeddings,
-                'nearest_neighbors': lk_nearest_neighbors,
-            },
-            fp,
-        )
+        pkl.dump(semantic_search_data, fp)
+
+    datasets.Dataset.from_dict(semantic_search_data).push_to_hub(args.hf_dataset_id, private=True)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -85,6 +87,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--lk_data_path', type=Path, required=True)
     parser.add_argument('--hf_access_token')
     parser.add_argument('--hf_model_id')
+    parser.add_argument('--hf_dataset_id')
     parser.add_argument('--use_onnx_runtime', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--output_dir', type=Path, default='./data')
     parser.add_argument('--output_file_name', default='lk_hadiths_data')
