@@ -44,12 +44,22 @@ LB_BOOK_ID_TO_NAME = {
     },
     'Tirmizi': {
         'ar': 'جامع الترمذي',
-        'en': "Jami` at-Tirmidhi",
+        'en': 'Jami` at-Tirmidhi',
     },
 }
 
 
 def main() -> None:
+    """
+    poetry run python tools/lk_data_builder.py \
+        --lk_data_path data/LK-Hadith-Corpus/ \
+        --hf_access_token hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+        --hf_model_id ieasybooks/multilingual-e5-large-onnx \
+        --hf_processed_dataset_id ieasybooks/lk-hadith-corpus-processed \
+        --hf_embeddings_dataset_id ieasybooks/lk-hadith-corpus-e5-embeddings-onnx \
+        --use_onnx_runtime
+    """
+
     args = parse_arguments()
 
     huggingface_hub.login(token=args.hf_access_token)
