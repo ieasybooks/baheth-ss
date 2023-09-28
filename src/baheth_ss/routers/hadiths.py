@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException, Query, Request, status
 
 from ..requests.hadiths_semantic_search_request import HadithsSemanticSearchRequest
 from ..responses.hadiths_count_response import HadithsCountResponse
-from ..responses.hadiths_nearest_neighbors_response import HadithsNearestNeighborsResponse
 from ..responses.hadiths_semantic_search_response import HadithsSemanticSearchResponse
 
 
@@ -16,22 +15,6 @@ router = APIRouter(prefix='/hadiths', tags=['hadiths'])
 @router.get('/count', response_model=HadithsCountResponse)
 def count(request: Request) -> HadithsCountResponse:
     return HadithsCountResponse(hadiths_count=len(request.app.hadiths.indexes))
-
-
-@router.get('/{hadith_index}/nearest_neighbors', response_model=HadithsNearestNeighborsResponse)
-def nearest_neighbors(
-    request: Request,
-    hadith_index: int,
-    limit: Annotated[int, Query(ge=0, le=100)] = 50,
-) -> HadithsNearestNeighborsResponse:
-    if hadith_index > len(request.app.hadiths.indexes):
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Hadith does not exist.')
-
-    return HadithsNearestNeighborsResponse(
-        hadith_index=hadith_index,
-        limit=limit,
-        nearest_neighbors=request.app.hadiths.nearest_neighbors[hadith_index][:limit],
-    )
 
 
 @router.post('/semantic_search', response_model=HadithsSemanticSearchResponse)

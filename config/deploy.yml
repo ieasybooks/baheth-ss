@@ -31,8 +31,7 @@ env:
     - USE_ONNX_RUNTIME
     - HF_ACCESS_TOKEN
     - HF_MODEL_ID
-    - HADITHS_DATA_FILE_PATH
-    - HADITHS_DATA_FILE_URL
+    - HF_EMBEDDINGS_DATASET_ID
 
 # Use a different ssh user than root
 # ssh:

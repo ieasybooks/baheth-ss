@@ -2,24 +2,14 @@ import pickle as pkl
 
 from pathlib import Path
 
-import gdown
-
+from datasets import load_dataset
 from dotmap import DotMap
 
 from ..types.hadiths_data import HadithsData
 
 
-def download_hadiths_data_file_if_not_exists(hadiths_data_file_path: Path, hadiths_data_file_url: str) -> None:
-    if hadiths_data_file_path.exists():
-        return
+def load_hadiths_data(hf_embeddings_dataset_id: str) -> DotMap:
+    hadiths_data = load_dataset(hf_embeddings_dataset_id, split='train')
+    hadiths_data.set_format('pt', columns=['embeddings'])
 
-    gdown.download(hadiths_data_file_url, output=str(hadiths_data_file_path), fuzzy=True)
-
-
-def load_hadiths_data(hadiths_data_file_path: Path) -> DotMap:
-    with open(hadiths_data_file_path, 'rb') as fp:
-        hadiths_data: HadithsData = pkl.load(fp)
-
-    hadiths_data['embeddings'] = hadiths_data['embeddings'].T
-
-    return DotMap(hadiths_data)
+    return DotMap(indexes=hadiths_data['indexes'], embeddings=hadiths_data['embeddings'].T)

@@ -18,16 +18,11 @@ from .settings import Settings
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     huggingface_hub.login(token=app.settings.hf_access_token)
 
-    data_utils.download_hadiths_data_file_if_not_exists(
-        app.settings.hadiths_data_file_path,
-        app.settings.hadiths_data_file_url,
-    )
-
     model_class = AutoModel
     if app.settings.use_onnx_runtime:
         model_class = ORTModelForFeatureExtraction
 
-    app.hadiths = data_utils.load_hadiths_data(app.settings.hadiths_data_file_path)
+    app.hadiths = data_utils.load_hadiths_data(app.settings.hf_embeddings_dataset_id)
     app.hadiths.embedder = SentenceEmbeddingPipeline(
         model=model_class.from_pretrained(app.settings.hf_model_id),
         tokenizer=AutoTokenizer.from_pretrained(app.settings.hf_model_id),
@@ -35,8 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
 
-    del app.hadiths.data
-    del app.hadiths.embedder
+    del app.hadiths
 
 
 app = FastAPI(lifespan=lifespan)
