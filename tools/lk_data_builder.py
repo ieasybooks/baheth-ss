@@ -69,16 +69,14 @@ def main() -> None:
         orient='records',
     )
 
-    semantic_search_data = {
-        'indexes': lk_data['index'].tolist(),
-        'embeddings': lk_embeddings,
-        'nearest_neighbors': lk_nearest_neighbors,
-    }
+    datasets.Dataset.from_pandas(lk_data, preserve_index=False).push_to_hub(args.hf_processed_dataset_id, private=True)
 
-    with open(args.output_dir.joinpath(f'{args.output_file_name}.pkl'), 'wb') as fp:
-        pkl.dump(semantic_search_data, fp)
-
-    datasets.Dataset.from_dict(semantic_search_data).push_to_hub(args.hf_dataset_id, private=True)
+    datasets.Dataset.from_dict(
+        {
+            'indexes': lk_data['index'].tolist(),
+            'embeddings': lk_embeddings,
+        },
+    ).push_to_hub(args.hf_embeddings_dataset_id, private=True)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -87,7 +85,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--lk_data_path', type=Path, required=True)
     parser.add_argument('--hf_access_token')
     parser.add_argument('--hf_model_id')
-    parser.add_argument('--hf_dataset_id')
+    parser.add_argument('--hf_processed_dataset_id')
+    parser.add_argument('--hf_embeddings_dataset_id')
     parser.add_argument('--use_onnx_runtime', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--output_dir', type=Path, default='./data')
     parser.add_argument('--output_file_name', default='lk_hadiths_data')
@@ -154,9 +153,9 @@ def process_lk_book_data(lk_book_data: pd.DataFrame, lk_book_id: str) -> pd.Data
     lk_book_data['arabic_book_name'] = LB_BOOK_ID_TO_NAME[lk_book_id]['ar']
     lk_book_data['english_book_name'] = LB_BOOK_ID_TO_NAME[lk_book_id]['en']
 
-    lk_book_data['chapter_number'] = lk_book_data['chapter_number'].map(to_int_if_float)
-    lk_book_data['section_number'] = lk_book_data['section_number'].map(to_int_if_float)
-    lk_book_data['hadith_number'] = lk_book_data['hadith_number'].map(to_int_if_float)
+    lk_book_data['chapter_number'] = lk_book_data['chapter_number'].map(to_int_if_float).astype(str)
+    lk_book_data['section_number'] = lk_book_data['section_number'].map(to_int_if_float).astype(str)
+    lk_book_data['hadith_number'] = lk_book_data['hadith_number'].map(to_int_if_float).astype(str)
 
     lk_book_data = lk_book_data[
         [
