@@ -152,13 +152,10 @@ def process_lk_book_data(lk_book_data: pd.DataFrame, lk_book_id: str) -> pd.Data
 
     lk_book_data = lk_book_data.map(remove_control_characters, na_action='ignore')
     lk_book_data = lk_book_data.map(strip_str, na_action='ignore')
+    lk_book_data = lk_book_data.map(to_int_if_float, na_action='ignore')
 
     lk_book_data['arabic_book_name'] = LB_BOOK_ID_TO_NAME[lk_book_id]['ar']
     lk_book_data['english_book_name'] = LB_BOOK_ID_TO_NAME[lk_book_id]['en']
-
-    lk_book_data['chapter_number'] = lk_book_data['chapter_number'].map(to_int_if_float).astype(str)
-    lk_book_data['section_number'] = lk_book_data['section_number'].map(to_int_if_float).astype(str)
-    lk_book_data['hadith_number'] = lk_book_data['hadith_number'].map(to_int_if_float).astype(str)
 
     lk_book_data = lk_book_data[
         [
@@ -215,10 +212,10 @@ def strip_str(value: Any) -> Any:
 
 
 def to_int_if_float(value: Any) -> Any:
-    if value == value and type(value) == float:
-        return int(value)
-
-    return value
+    try:
+        return str(int(float(value)))
+    except ValueError:
+        return value
 
 
 def load_tokenizer_and_model(
