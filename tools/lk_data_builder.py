@@ -72,13 +72,6 @@ def main() -> None:
 
     lk_data['nearest_neighbors'] = lk_nearest_neighbors
 
-    lk_data.to_json(
-        args.output_dir.joinpath(f'{args.output_file_name}.json'),
-        indent=2,
-        force_ascii=False,
-        orient='records',
-    )
-
     datasets.Dataset.from_pandas(lk_data, preserve_index=False).push_to_hub(args.hf_processed_dataset_id, private=True)
 
     datasets.Dataset.from_dict(
