@@ -109,7 +109,6 @@ def read_lk_data(lk_data_path: Path) -> pd.DataFrame:
     lk_data = pd.concat(lk_books_data)
 
     lk_data.insert(loc=0, column='index', value=list(range(len(lk_data))))
-    lk_data['index'] = lk_data['index'] + 1
 
     return lk_data
 
