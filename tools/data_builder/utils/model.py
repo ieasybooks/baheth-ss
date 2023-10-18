@@ -47,7 +47,7 @@ def embed_texts(
 
     embeddings_buffer = []
 
-    for i in tqdm(range(0, len(texts), batch_size)):
+    for i in tqdm(range(0, len(texts), batch_size), desc='Extract Embeddings'):
         texts_batch = list(map(lambda text: f'passage: {text}', texts[i : i + batch_size]))
 
         inputs = tokenizer(texts_batch, max_length=512, padding=True, truncation=True, return_tensors='pt')
@@ -82,11 +82,16 @@ def embed_texts(
     return torch.stack((embeddings_buffer))
 
 
-def get_nearest_neighbors(embeddings: Tensor, k: int = 100) -> list[list[int]]:
-    nearest_neighbors: list[list[int]] = (embeddings @ embeddings.T * 100).topk(k + 1).indices.tolist()
+def get_nearest_neighbors(embeddings: Tensor, k: int = 100, batch_size: int = 512) -> list[list[int]]:
+    nearest_neighbors: list[list[int]] = [[] for _ in range(embeddings.shape[0])]
 
-    for i in range(len(nearest_neighbors)):
-        nearest_neighbors[i].remove(i)
+    for batch_id in tqdm(range(0, embeddings.shape[0], batch_size), desc='Compute Nearest Neighbors2'):
+        embeddings_batch = embeddings[batch_id : batch_id + batch_size]
+        batch_nearest_neighbors = (embeddings_batch @ embeddings.T * 100).topk(k + 1).indices.tolist()
+
+        for i in range(len(batch_nearest_neighbors)):
+            batch_nearest_neighbors[i].remove(batch_id + i)
+            nearest_neighbors[batch_id + i] = batch_nearest_neighbors[i]
 
     return nearest_neighbors
 

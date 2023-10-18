@@ -15,3 +15,4 @@ class Args:
     use_cuda: bool
     use_onnx_runtime: bool
     output_dir: Path
+    test: bool
