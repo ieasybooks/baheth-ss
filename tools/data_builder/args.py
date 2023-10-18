@@ -12,5 +12,6 @@ class Args:
     embedding_batch_size: int
     embedding_buffer_size: int
     max_nearest_neighbors: int
+    use_cuda: bool
     use_onnx_runtime: bool
     output_dir: Path

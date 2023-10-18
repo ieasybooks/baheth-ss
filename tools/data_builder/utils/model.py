@@ -14,6 +14,7 @@ from transformers import AutoModel, AutoTokenizer, PreTrainedModel, PreTrainedTo
 
 def load_tokenizer_and_model(
     hf_model_id: str,
+    use_cuda: bool,
     use_onnx_runtime: bool,
 ) -> tuple[PreTrainedTokenizer, ORTModelForFeatureExtraction | PreTrainedModel]:
     tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
@@ -22,6 +23,9 @@ def load_tokenizer_and_model(
         model = ORTModelForFeatureExtraction.from_pretrained(hf_model_id)
     else:
         model = AutoModel.from_pretrained(hf_model_id)
+
+    if use_cuda:
+        model = model.to(torch.device('cuda'))
 
     return tokenizer, model
 
@@ -32,6 +36,7 @@ def embed_texts(
     model: PreTrainedModel,
     batch_size: int,
     embeddings_buffer_size: int,
+    use_cuda: bool,
     output_dir: Path,
 ) -> Tensor:
     tmp_embeddings_dir = output_dir.joinpath('tmp_embeddings')
@@ -46,9 +51,16 @@ def embed_texts(
         texts_batch = list(map(lambda text: f'passage: {text}', texts[i : i + batch_size]))
 
         inputs = tokenizer(texts_batch, max_length=512, padding=True, truncation=True, return_tensors='pt')
+
+        if use_cuda:
+            inputs = {k: v.to(torch.device('cuda')) for k, v in inputs.items()}
+
         outputs = model(**inputs)
 
-        embeddings_buffer.extend(average_pool(outputs.last_hidden_state, inputs['attention_mask']))
+        if use_cuda:
+            embeddings_buffer.extend(average_pool(outputs.last_hidden_state, inputs['attention_mask']).cpu())
+        else:
+            embeddings_buffer.extend(average_pool(outputs.last_hidden_state, inputs['attention_mask']))
 
         if len(embeddings_buffer) == embeddings_buffer_size or i + batch_size == len(texts):
             embeddings_buffer = torch.stack((embeddings_buffer))

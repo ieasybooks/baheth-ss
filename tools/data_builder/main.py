@@ -39,13 +39,14 @@ def main() -> None:
     book_infos = lk_book_infos + dorar_book_infos
     hadiths = lk_hadiths + dorar_hadiths
 
-    tokenizer, model = load_tokenizer_and_model(args.hf_model_id, args.use_onnx_runtime)
+    tokenizer, model = load_tokenizer_and_model(args.hf_model_id, args.use_cuda, args.use_onnx_runtime)
     embeddings = embed_texts(
         [hadith['searchable_text'] for hadith in hadiths],
         tokenizer,
         model,
         args.embedding_batch_size,
         args.embedding_buffer_size,
+        args.use_cuda,
         args.output_dir,
     )
     nearest_neighbors = get_nearest_neighbors(embeddings, args.max_nearest_neighbors)
@@ -67,6 +68,7 @@ def parse_arguments() -> Args:
     parser.add_argument('--embedding_batch_size', type=int, default=2)
     parser.add_argument('--embedding_buffer_size', type=int, default=50)
     parser.add_argument('--max_nearest_neighbors', type=int, default=100)
+    parser.add_argument('--use_cuda', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--use_onnx_runtime', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--output_dir', type=Path, default='./data')
 
