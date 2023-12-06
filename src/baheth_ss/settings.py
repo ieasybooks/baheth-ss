@@ -8,4 +8,3 @@ class Settings(BaseSettings):
 
     hf_access_token: str
     hf_model_id: str
-    hf_embeddings_dataset_id: str

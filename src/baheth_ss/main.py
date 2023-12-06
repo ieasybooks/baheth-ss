@@ -7,10 +7,8 @@ from fastapi import FastAPI
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoModel, AutoTokenizer
 
-import src.baheth_ss.utils.data as data_utils
-
 from .pipelines.sentence_embedding_pipeline import SentenceEmbeddingPipeline
-from .routers import hadiths
+from .routers import embed
 from .settings import Settings
 
 
@@ -22,20 +20,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if app.settings.use_onnx_runtime:
         model_class = ORTModelForFeatureExtraction
 
-    app.hadiths = data_utils.load_hadiths_data(app.settings.hf_embeddings_dataset_id)
-    app.hadiths.embedder = SentenceEmbeddingPipeline(
+    app.embedder = SentenceEmbeddingPipeline(
         model=model_class.from_pretrained(app.settings.hf_model_id),
         tokenizer=AutoTokenizer.from_pretrained(app.settings.hf_model_id),
     )
 
     yield
 
-    del app.hadiths
+    del app.embedder
 
 
 app = FastAPI(lifespan=lifespan)
 app.settings = Settings()
-app.include_router(hadiths.router)
+app.include_router(embed.router)
 
 
 @app.get('/')

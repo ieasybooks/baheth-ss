@@ -28,3 +28,11 @@ poetry run uvicorn src.baheth_ss.main:app --port 8383 --reload --env-file .env
 docker build -t baheth_ss-app .
 docker run --env-file=.env -d --name baheth_ss -p 8383:8383 baheth_ss-app
 ```
+
+## لبناء ورفع Docker image
+
+```
+docker build -t baheth_ss .
+docker image tag baheth_ss ieasybooks/baheth_ss:latest
+docker image push ieasybooks/baheth_ss:latest
+```
