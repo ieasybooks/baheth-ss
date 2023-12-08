@@ -4,44 +4,32 @@ from pathlib import Path
 from typing import Any
 
 
-def prepare_data(data_path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def prepare_data(data_path: Path) -> list[dict[str, Any]]:
     return read_data(data_path)
 
 
-def read_data(data_path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    book_infos = []
-    hadiths = []
+def read_data(data_path: Path) -> list[dict[str, Any]]:
+    books_data = []
 
     for book_data_path in (data_path / 'books').glob('*.json'):
         book_data = read_book_data(book_data_path)
-        book_info, book_hadiths = process_book_data(book_data)
+        books_data.append(process_book_data(book_data))
 
-        book_infos.append(book_info)
-        hadiths.extend(book_hadiths)
-
-    return book_infos, hadiths
+    return books_data
 
 
 def read_book_data(book_data_path: Path) -> dict[str, Any]:
     book_data: dict[str, Any] = json.loads(book_data_path.open().read())
+
     return book_data
 
 
-def process_book_data(book_data: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    book_info = {
-        'title': book_data['name'],
-        'author': book_data['author_or_supervisor'],
-        'description': '',
-        'source': 'dorar',
-        'user_id': 1,
-    }
-
+def process_book_data(book_data: dict[str, Any]) -> dict[str, Any]:
     hadiths = []
 
     for hadith in book_data['hadiths']:
         hadiths.append(
             {
-                'source': 'dorar',
                 'searchable_text': hadith['hadith_text'],
                 'data': {
                     'hash': hadith['hash'],
@@ -64,8 +52,13 @@ def process_book_data(book_data: dict[str, Any]) -> tuple[dict[str, Any], list[d
                     'similars': hadith['similars'],
                     'alts': hadith['alts'],
                 },
-                'hadith_book_name': book_data['name'],
-            }
+            },
         )
 
-    return book_info, hadiths
+    return {
+        'title': book_data['name'],
+        'author': book_data['author_or_supervisor'],
+        'description': '',
+        'source': 'dorar',
+        'hadiths': hadiths,
+    }

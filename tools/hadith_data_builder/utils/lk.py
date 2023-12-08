@@ -8,30 +8,28 @@ from pyarabic.araby import strip_tashkeel
 from utils.common import remove_control_characters, strip_str, to_int_if_float_or_str
 
 
-def prepare_data(data_path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    data = read_data(data_path)
-    data = process_data(data)
-
-    book_infos = [
-        {'title': value['ar'], 'author': value['author'], 'description': '', 'source': 'lk', 'user_id': 1}
-        for value in BOOK_DATA.values()
-    ]
-
-    return book_infos, data
+def prepare_data(data_path: Path) -> list[dict[str, Any]]:
+    return read_data(data_path)
 
 
-def read_data(data_path: Path) -> pd.DataFrame:
+def read_data(data_path: Path) -> list[dict[str, Any]]:
     books_data = []
 
-    for book_id in BOOK_DATA.keys():
+    for book_id, book_info in BOOK_DATA.items():
         book_data = read_book_data(data_path, book_id)
         book_data = process_book_data(book_data, book_id)
 
-        books_data.append(book_data)
+        books_data.append(
+            {
+                'title': book_info['ar'],
+                'author': book_info['author'],
+                'description': '',
+                'source': 'lk',
+                'hadiths': book_data,
+            },
+        )
 
-    data = pd.concat(books_data)
-
-    return data
+    return books_data
 
 
 def read_book_data(data_path: Path, book_id: str) -> pd.DataFrame:
@@ -102,7 +100,7 @@ def process_book_data(book_data: pd.DataFrame, book_id: str) -> pd.DataFrame:
         ]
     ]
 
-    return book_data
+    return convert_book_data_format(book_data)
 
 
 def build_text_to_embed(row: pd.Series) -> str:
@@ -118,10 +116,9 @@ def build_text_to_embed(row: pd.Series) -> str:
     return ' '.join(text_to_embed)[:-3]
 
 
-def process_data(data: pd.DataFrame) -> list[dict[str, Any]]:
+def convert_book_data_format(data: pd.DataFrame) -> list[dict[str, Any]]:
     processed_data: list[dict[str, Any]] = data.apply(
         lambda row: {
-            'source': 'lk',
             'searchable_text': row['text_to_embed'],
             'data': {
                 'arabic_book_name': row['arabic_book_name'],
@@ -143,7 +140,6 @@ def process_data(data: pd.DataFrame) -> list[dict[str, Any]]:
                 'english_grade': row['english_grade'],
                 'arabic_comment': row['arabic_comment'],
             },
-            'hadith_book_name': row['arabic_book_name'],
         },
         axis=1,
     ).to_list()
