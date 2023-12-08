@@ -98,7 +98,7 @@ def process_book_data(book_data: pd.DataFrame, book_id: str) -> pd.DataFrame:
             'english_grade',
             'arabic_comment',
             'text_to_embed',
-        ],
+        ]
     ]
 
     return convert_book_data_format(book_data)

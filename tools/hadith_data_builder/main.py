@@ -59,6 +59,7 @@ def show_statistics(books_data: list[dict[str, Any]]) -> None:
 
     print(f'Books count: {len(books_data)}')
     print(f"Hadiths count: {sum([len(book_data['hadiths']) for book_data in books_data])}")
+    print(f"Maximum number of hadiths in one book: {max([len(book_data['hadiths']) for book_data in books_data])}")
 
     print('LK:')
     print(
