@@ -12,8 +12,8 @@ from utils.lk import prepare_data as prepare_lk_data
 def main() -> None:
     """
     poetry run python tools/hadith_data_builder/main.py \
-        --lk_data_path data/LK-Hadith-Corpus/ \
-        --dorar_data_path data/dorar/
+        --lk_data_path data/hadith/LK-Hadith-Corpus/ \
+        --dorar_data_path data/hadith/dorar/
     """
 
     args = parse_arguments()
@@ -74,10 +74,10 @@ def show_statistics(books_data: list[dict[str, Any]]) -> None:
 
 
 def write_data(books_data: list[dict[str, Any]], output_dir: Path) -> None:
-    (output_dir / 'hadith_books_data').mkdir(exist_ok=True)
+    (output_dir / 'hadith' / 'books_data').mkdir(exist_ok=True)
 
     for book_data in books_data:
-        (output_dir / 'hadith_books_data' / f"{book_data['title']}.json").open('w').write(
+        (output_dir / 'hadith' / 'books_data' / f"{book_data['title']}.json").open('w').write(
             json.dumps(book_data, ensure_ascii=False, indent=2)
         )
 

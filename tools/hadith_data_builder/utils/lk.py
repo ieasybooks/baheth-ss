@@ -66,7 +66,8 @@ def process_book_data(book_data: pd.DataFrame, book_id: str) -> pd.DataFrame:
 
     book_data.dropna(subset=['arabic_hadith'], inplace=True)
 
-    book_data['arabic_comment'] = book_data['arabic_comment'].fillna('')
+    book_data = book_data.fillna('')
+
     book_data['text_to_embed'] = book_data.apply(build_text_to_embed, axis=1)
 
     book_data = book_data.map(remove_control_characters, na_action='ignore')
@@ -97,7 +98,7 @@ def process_book_data(book_data: pd.DataFrame, book_id: str) -> pd.DataFrame:
             'english_grade',
             'arabic_comment',
             'text_to_embed',
-        ]
+        ],
     ]
 
     return convert_book_data_format(book_data)
