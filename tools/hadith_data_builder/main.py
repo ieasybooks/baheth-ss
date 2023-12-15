@@ -78,7 +78,10 @@ def write_data(books_data: list[dict[str, Any]], output_dir: Path) -> None:
     (output_dir / 'hadith' / 'books_data').mkdir(exist_ok=True)
 
     for book_data in books_data:
-        (output_dir / 'hadith' / 'books_data' / f"{book_data['title']}.json").open('w').write(
+        output_directory = output_dir / 'hadith' / 'books_data' / book_data['source']
+
+        output_directory.mkdir(exist_ok=True)
+        (output_directory / f"{book_data['title']}.json").open('w').write(
             json.dumps(book_data, ensure_ascii=False, indent=2)
         )
 
