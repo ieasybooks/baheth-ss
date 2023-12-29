@@ -15,7 +15,7 @@ keywords = ["baheth", "semantic search", "semantic similarity"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "0.103.1"
+fastapi = "0.105.0"
 gunicorn = "21.2.0"
 huggingface-hub = "0.16.4"
 optimum = { version = "1.13.1", extras = ["onnxruntime"] }
@@ -24,13 +24,13 @@ torch = [
     { markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", python = ">=3.10", version = "2.0.1", source = "pypi" },
     { markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", python = ">=3.10", version = "2.0.1", source = "pytorch-cpu" },
 ]
-transformers = "4.33.1"
-uvicorn = { version = "0.23.2", extras = ["standard"] }
+transformers = "4.35.2"
+uvicorn = { version = "0.25.0", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
-black = "23.9.1"
+black = "23.12.1"
 isort = "5.12.0"
-pandas = "2.1.0"
+pandas = "2.1.4"
 pre-commit = "3.4.0"
 PyArabic = "0.6.15"
 tqdm = "4.66.1"
