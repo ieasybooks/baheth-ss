@@ -1,0 +1,57 @@
+service: baheth-ss
+
+image: ieasybooks/baheth-ss
+
+registry:
+  username: ieasybooks
+
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+servers:
+  web:
+    hosts:
+      - 84.46.251.182
+    options:
+      network: "kamal_network"
+    labels:
+      traefik.http.routers.baheth-ss.entrypoints: websecure
+      traefik.http.routers.baheth-ss.rule: Host(`baheth-ss.ieasybooks.com`)
+      traefik.http.routers.baheth-ss.tls: true
+      traefik.http.routers.baheth-ss.tls.certresolver: letsencrypt
+
+traefik:
+  options:
+    network: "kamal_network"
+    publish:
+      - "443:443"
+    volume:
+      - "/letsencrypt/acme.json:/letsencrypt/acme.json"
+  args:
+    entryPoints.web.address: ":80"
+    entryPoints.websecure.address: ":443"
+    entryPoints.web.http.redirections.entryPoint.to: websecure
+    entryPoints.web.http.redirections.entryPoint.scheme: https
+    entryPoints.web.http.redirections.entrypoint.permanent: true
+    certificatesResolvers.letsencrypt.acme.email: "easybooksdev@gmail.com"
+    certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
+    certificatesResolvers.letsencrypt.acme.httpchallenge: true
+    certificatesResolvers.letsencrypt.acme.httpchallenge.entrypoint: web
+
+# Remember to run `kamal env push` after making changes!
+env:
+  clear:
+    USE_ONNX_RUNTIME: true
+  secret:
+    - HF_ACCESS_TOKEN
+    - HF_MODEL_ID
+
+healthcheck:
+  path: /are_you_healthy
+  port: 8383
+  exposed_port: 4001
+  log_lines: 10_000
+  max_attempts: 15
+
+builder:
+  multiarch: false

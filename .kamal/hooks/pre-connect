@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Define the SSH connection details
+REMOTE_USER="root"
+REMOTE_HOST="${KAMAL_HOSTS}"
+REMOTE_SSH_PORT="22" # Default SSH port is 22, change if different
+
+# Run the commands remotely via SSH
+ssh -p "$REMOTE_SSH_PORT" "$REMOTE_USER@$REMOTE_HOST" 2>&1 > /dev/null <<ENDSSH
+  apt install htop unzip screen
+
+  docker network inspect kamal_network >/dev/null 2>&1 || docker network create kamal_network
+
+  test -d /letsencrypt || mkdir -p /letsencrypt && touch /letsencrypt/acme.json && chmod 600 /letsencrypt/acme.json
+ENDSSH
