@@ -15,7 +15,7 @@ keywords = ["baheth", "semantic search", "semantic similarity"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "0.105.0"
+fastapi = "0.108.0"
 gunicorn = "21.2.0"
 huggingface-hub = "0.16.4"
 optimum = { version = "1.13.1", extras = ["onnxruntime"] }
