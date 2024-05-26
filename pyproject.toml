@@ -29,7 +29,7 @@ uvicorn = { version = "0.29.0", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 black = "24.4.2"
-isort = "5.12.0"
+isort = "5.13.2"
 pandas = "2.1.4"
 pre-commit = "3.7.1"
 PyArabic = "0.6.15"
