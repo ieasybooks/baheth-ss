@@ -25,7 +25,7 @@ torch = [
     { markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", python = ">=3.10", version = "2.0.1", source = "pytorch-cpu" },
 ]
 transformers = "4.40.1"
-uvicorn = { version = "0.25.0", extras = ["standard"] }
+uvicorn = { version = "0.29.0", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 black = "24.4.2"
