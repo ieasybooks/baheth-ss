@@ -33,7 +33,7 @@ isort = "5.13.2"
 pandas = "2.1.4"
 pre-commit = "3.7.1"
 PyArabic = "0.6.15"
-tqdm = "4.66.1"
+tqdm = "4.66.4"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
