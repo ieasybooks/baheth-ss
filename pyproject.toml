@@ -19,7 +19,7 @@ fastapi = "0.111.0"
 gunicorn = "21.2.0"
 huggingface-hub = "0.20.3"
 optimum = { version = "1.20.0", extras = ["onnxruntime"] }
-pydantic-settings = "2.2.1"
+pydantic-settings = "2.3.1"
 torch = [
     { markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", python = ">=3.10", version = "2.0.1", source = "pypi" },
     { markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", python = ">=3.10", version = "2.0.1", source = "pytorch-cpu" },
