@@ -17,7 +17,7 @@ keywords = ["baheth", "semantic search", "semantic similarity"]
 python = "^3.10"
 fastapi = "0.111.0"
 gunicorn = "21.2.0"
-huggingface-hub = "0.20.3"
+huggingface-hub = "0.23.4"
 optimum = { version = "1.20.0", extras = ["onnxruntime"] }
 pydantic-settings = "2.2.1"
 torch = [
